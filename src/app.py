@@ -3,6 +3,7 @@ from dash.dependencies import Input, Output
 import pandas as pd
 import json
 from employee_keys import extra_column
+from setting_keys import extra_column_s
 
 
 #------------------ function to convert unix time to readable time ----------------------
@@ -36,6 +37,7 @@ def make_table_from_json(json_object):
 #----------------- functions that transforms settings part of json object into pandas dataframe ----------
 def display_settings(json_object):
     df = pd.DataFrame(json_object['ImportSettings'], index = [0]).T.reset_index().rename(columns = {0: 'Information', 'index':'Key'})
+    df['Explanation / Different Name'] = df.Key.map(extra_column_s).fillna('-')
     return df
 
 app = Dash(__name__)
@@ -43,7 +45,7 @@ app = Dash(__name__)
 server = app.server
 
 app.layout = html.Div(children=[
-    html.H1(children='Display your jsons nicely'),
+    html.H1(children='Read your JSON files easily'),
 
     dcc.Textarea(
         id='textarea-example',
@@ -53,9 +55,11 @@ app.layout = html.Div(children=[
     ## div in which we get told if object is correct or not correct
     html.Div(id='textarea-example-output', style={'whiteSpace': 'pre-line', 'marginBottom': 25, 'marginTop': 25}),
 
+    html.H3(id='Employees_header', children = ''),
+
     dash_table.DataTable(id='data_table',data= [],columns= []),
 
-    html.H3(children='Settings of this object'),
+    html.H3(id='Settings_header' ,children=''),
 
     dash_table.DataTable(id='settings_table',data= [],columns= [])
 ])
@@ -92,20 +96,27 @@ def update_output(value):
         return [], [], [] , []
 
 
-# ----- update settings_table on callback------------------------- 
-# @app.callback(
-#     [Output("settings_table", "data"), Output('settings_table', 'columns')],
-#     Input('textarea-example', 'value')
-# )
-# def update_settings_output(value):
-#     try: 
-#         json_object = json.loads(value)
-#         df2 = display_settings(json_object)
-#         print(df2)
-#         return df2.to_dict('records'), [{"name": i, "id": i} for i in df2.columns]
-#     except:
-#         json_object = "none"
-#         return [], []
+# ----- update settings_header and Employees_header on callback------------------------- 
+@app.callback(
+     Output("Settings_header", "children"),
+     Input('settings_table', 'data')
+ )
+def update_settings_output(data):
+    if data != []:
+        return 'Settings of this object'
+    else:
+        return ''
+
+@app.callback(
+     Output("Employees_header", "children"),
+     Input('data_table', 'data')
+ )
+def update_settings_output(data):
+    if data != []:
+        return 'Settings of this object'
+    else:
+        return ''
+
 
 
 # ----- run main -------------------------------------------
