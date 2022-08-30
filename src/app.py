@@ -113,7 +113,7 @@ def update_settings_output(data):
  )
 def update_settings_output(data):
     if data != []:
-        return 'Settings of this object'
+        return 'Properties of this object'
     else:
         return ''
 
