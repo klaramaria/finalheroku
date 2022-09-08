@@ -21,9 +21,14 @@ def clean_time(time):
     return ntime
 
 #------------------ function that transforms json object into pandas dataframe ----------
-def make_table_from_json(json_object):
+def make_table_from_json(json_object, key):
     # df = pd.json_normalize(json_object)
-    df = pd.DataFrame(json_object['Employees'])
+    # key_list = list(json_object.keys())
+    #key_list.remove('Name')
+    if key == 'Employees':
+        df = pd.DataFrame(json_object[key])
+    else: 
+        df = pd.DataFrame(json_object, index = [0])
     time_column_names = ['DepartmentStartDate', 'StartDate', 'EndDate', 'ContractTypeStartDate', 'ContractHourStartDate', 'PositionStartDate']
     for column_name in time_column_names:
         if column_name in df.columns: 
@@ -85,16 +90,24 @@ def update_output(value):
     Input('textarea-example', 'value')
 )
 def update_output(value):
-    try: 
+    try:
         json_object = json.loads(value)
-        df1 = make_table_from_json(json_object)
-        df2 = display_settings(json_object)
-        print(df2)
-        return df1.to_dict('records'), [{"name": i, "id": i} for i in df1.columns], df2.to_dict('records'), [{"name": i, "id": i} for i in df2.columns]
-    except:
-        json_object = "none"
-        return [], [], [] , []
-
+        if 'Employees' in list(json_object.keys()): 
+            df1 = make_table_from_json(json_object, 'Employees')
+            df1 = df1.astype(str)
+            print(df1)
+            df2 = display_settings(json_object)
+            df2 = df2.astype(str)
+            return df1.to_dict('records'), [{"name": i, "id": i} for i in df1.columns], df2.to_dict('records'), [{"name": i, "id": i} for i in df2.columns]
+        else:
+            try:
+                df = make_table_from_json(json_object, 'na')
+                print(df)
+                return df.to_dict('records'), [{"name": i, "id": i} for i in df.columns], [] , []
+            except:
+                return [], [] , [] , []
+    except: 
+        return [], [] , [] ,[]
 
 # ----- update settings_header and Employees_header on callback------------------------- 
 @app.callback(
