@@ -1,0 +1,19 @@
+@font-face {
+    font-family: 'GT-Walsheim'; /*this is what you put on your font family*/
+    src: url('fonts/GT-Walsheim-Pro-Light.otf'); /*Link to the font*/
+  }
+
+body {
+    font-family: 'GT-Walsheim';
+}
+
+#textarea-example {
+    color: rgb(107, 107, 107);
+    font-size: 9;
+}
+
+#data_table table {
+    --accent: #1EAEDB !important;
+    --selected-background: #FF4136 !important;
+    --selected-color: #3C3C3C !important;
+}

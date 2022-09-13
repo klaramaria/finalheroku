@@ -2,7 +2,7 @@ from dash import Dash, dash_table, html, dcc
 from dash.dependencies import Input, Output
 import pandas as pd
 import json
-from employee_keys import extra_column
+from employee_keys import extra_column, string_example
 from setting_keys import extra_column_s
 
 
@@ -35,14 +35,14 @@ def make_table_from_json(json_object, key):
             df = df.assign(
                 **{column_name: df[column_name].apply(lambda x: clean_time(x))}
             )
-    df = df.T.reset_index().rename(columns = {0: 'Information', 'index':'Key'})
-    df['Explanation / Different Name'] = df.Key.map(extra_column).fillna('-')
+    df = df.T.reset_index().rename(columns = {0: 'Value', 'index':'Key'})
+    df['Explanation / Alternate Name'] = df.Key.map(extra_column).fillna('-')
     return df
 
 #----------------- functions that transforms settings part of json object into pandas dataframe ----------
 def display_settings(json_object):
-    df = pd.DataFrame(json_object['ImportSettings'], index = [0]).T.reset_index().rename(columns = {0: 'Information', 'index':'Key'})
-    df['Explanation / Different Name'] = df.Key.map(extra_column_s).fillna('-')
+    df = pd.DataFrame(json_object['ImportSettings'], index = [0]).T.reset_index().rename(columns = {0: 'Value', 'index':'Key'})
+    df['Explanation / Alternate Name'] = df.Key.map(extra_column_s).fillna('-')
     return df
 
 app = Dash(__name__)
@@ -50,23 +50,38 @@ app = Dash(__name__)
 server = app.server
 
 app.layout = html.Div(children=[
-    html.H1(children='Read your JSON files easily'),
+    html.H1(children='Make your JSON files more readable'),
 
     dcc.Textarea(
         id='textarea-example',
-        value='Paste the JSON object that you received in here\nLine Breaks can or cannot be put in',
-        style={'width': '100%', 'height': 300},
+        value=string_example,
+        style={'width': '100%','height':'390px', 'font-size':13},
     ),
     ## div in which we get told if object is correct or not correct
     html.Div(id='textarea-example-output', style={'whiteSpace': 'pre-line', 'marginBottom': 25, 'marginTop': 25}),
 
     html.H3(id='Employees_header', children = ''),
 
-    dash_table.DataTable(id='data_table',data= [],columns= []),
+    dash_table.DataTable(id='data_table',data= [],columns= [] ,style_cell={'textAlign': 'left'}, style_data_conditional=[
+            {
+                'if': {
+                    'state': 'selected'  # 'active' | 'selected'
+                },
+                'backgroundColor': '#fc9f95',
+                "border": "1px #ff8273",
+            },
+        ],),
 
     html.H3(id='Settings_header' ,children=''),
 
-    dash_table.DataTable(id='settings_table',data= [],columns= [])
+    dash_table.DataTable(id='settings_table',data= [],columns= [], style_cell={'textAlign': 'left'}, style_data_conditional=[{
+                'if': {
+                    'state': 'selected'  # 'active' | 'selected'
+                },
+                'backgroundColor': '#fc9f95',
+                "border": "1px #ff8273",
+            },
+        ],)
 ])
 
 # -------------- error when no json object -----------------------------
@@ -77,7 +92,7 @@ app.layout = html.Div(children=[
 def update_output(value):
     try: 
         json_object = json.loads(value)
-        return 'You entered a correct json object \n'
+        return 'This is a correct JSON object \n'
     except:
         json_object = "none"
         return 'This is not a json object'
