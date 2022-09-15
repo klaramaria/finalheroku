@@ -37,6 +37,10 @@ def make_table_from_json(json_object, key):
             )
     df = df.T.reset_index().rename(columns = {0: 'Value', 'index':'Key'})
     df['Explanation / Alternate Name'] = df.Key.map(extra_column).fillna('-')
+    df = df.astype(str)
+    if 'CustomColumns' in df['Key'].values:
+        df[df['Key']=='CustomColumns']['Value'].values[0]= df[df['Key']=='CustomColumns']['Value'].values[0].replace('},','},\n')
+        print(df[df['Key']=='CustomColumns']['Value'].values[0])
     return df
 
 #----------------- functions that transforms settings part of json object into pandas dataframe ----------
@@ -51,7 +55,7 @@ server = app.server
 
 app.layout = html.Div(children=[
     html.H1(children='Make your JSON files more readable'),
-
+    dcc.Dropdown(options = ['JSON', 'XML'], value = 'JSON', id='dropdown'),
     dcc.Textarea(
         id='textarea-example',
         value=string_example,
@@ -62,7 +66,7 @@ app.layout = html.Div(children=[
 
     html.H3(id='Employees_header', children = ''),
 
-    dash_table.DataTable(id='data_table',data= [],columns= [] ,style_cell={'textAlign': 'left'}, style_data_conditional=[
+    dash_table.DataTable(id='data_table',data= [],columns= [] ,style_cell={'textAlign': 'left', 'whiteSpace': 'normal', 'minWidth': '250px'}, style_data_conditional=[
             {
                 'if': {
                     'state': 'selected'  # 'active' | 'selected'
@@ -74,7 +78,7 @@ app.layout = html.Div(children=[
 
     html.H3(id='Settings_header' ,children=''),
 
-    dash_table.DataTable(id='settings_table',data= [],columns= [], style_cell={'textAlign': 'left'}, style_data_conditional=[{
+    dash_table.DataTable(id='settings_table',data= [],columns= [], style_cell={'textAlign': 'left', 'whiteSpace': 'pre-line'}, style_data_conditional=[{
                 'if': {
                     'state': 'selected'  # 'active' | 'selected'
                 },
@@ -87,42 +91,49 @@ app.layout = html.Div(children=[
 # -------------- error when no json object -----------------------------
 @app.callback(
     Output('textarea-example-output', 'children'),
+    Output('textarea-example', 'value'),
+    Input('dropdown', 'value'),
     Input('textarea-example', 'value')
 )
-def update_output(value):
-    try: 
-        json_object = json.loads(value)
-        return 'This is a correct JSON object \n'
-    except:
-        json_object = "none"
-        return 'This is not a json object'
+def update_output(ddval, txtvalue):
+    if ddval == 'JSON':
+        try: 
+            json_object = json.loads(txtvalue)
+            return 'This is a correct JSON object \n', txtvalue
+        except:
+            json_object = "none"
+            return 'This is not a json object', string_example
+    else: 
+        return 'We are working on the XML Option', 'Paste your XML-Object in here. Nothing will happen but you can practice your pasting.'
 
 
 # ------ update data_table on callback ----------------
 @app.callback(
     [Output("data_table", "data"), Output('data_table', 'columns'),
     Output("settings_table", "data"), Output('settings_table', 'columns')],
+    Input('dropdown','value'),
     Input('textarea-example', 'value')
 )
-def update_output(value):
-    try:
-        json_object = json.loads(value)
-        if 'Employees' in list(json_object.keys()): 
-            df1 = make_table_from_json(json_object, 'Employees')
-            df1 = df1.astype(str)
-            print(df1)
-            df2 = display_settings(json_object)
-            df2 = df2.astype(str)
-            return df1.to_dict('records'), [{"name": i, "id": i} for i in df1.columns], df2.to_dict('records'), [{"name": i, "id": i} for i in df2.columns]
-        else:
-            try:
-                df = make_table_from_json(json_object, 'na')
-                print(df)
-                return df.to_dict('records'), [{"name": i, "id": i} for i in df.columns], [] , []
-            except:
-                return [], [] , [] , []
-    except: 
-        return [], [] , [] ,[]
+def update_output(ddval, value):
+    if ddval == 'JSON':
+        try:
+            json_object = json.loads(value)
+            if 'Employees' in list(json_object.keys()): 
+                df1 = make_table_from_json(json_object, 'Employees')
+                df2 = display_settings(json_object)
+                df2 = df2.astype(str)
+                return df1.to_dict('records'), [{"name": i, "id": i} for i in df1.columns], df2.to_dict('records'), [{"name": i, "id": i} for i in df2.columns]
+            else:
+                try:
+                    df = make_table_from_json(json_object, 'na')
+                    print(df)
+                    return df.to_dict('records'), [{"name": i, "id": i} for i in df.columns], [] , []
+                except:
+                    return [], [] , [] , []
+        except: 
+            return [], [] , [] ,[]
+    else:
+        return [], [], [], []
 
 # ----- update settings_header and Employees_header on callback------------------------- 
 @app.callback(

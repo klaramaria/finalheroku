@@ -1,0 +1,4 @@
+- account for employee object without settings (is this possible?)
+- line break  for custom column list
+- XML:
+    - Approved Rota - CUrrent Day
