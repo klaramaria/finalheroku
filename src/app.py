@@ -54,7 +54,7 @@ app = Dash(__name__)
 server = app.server
 
 app.layout = html.Div(children=[
-    html.H1(children='Make your JSON files more readable'),
+    html.H1(children='Make your files more readable'),
     dcc.Dropdown(options = ['JSON', 'XML'], value = 'JSON', id='dropdown'),
     dcc.Textarea(
         id='textarea-example',
