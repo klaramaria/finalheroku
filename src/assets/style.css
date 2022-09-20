@@ -13,7 +13,5 @@ body {
 }
 
 #data_table table {
-    --accent: #1EAEDB !important;
-    --selected-background: #FF4136 !important;
-    --selected-color: #3C3C3C !important;
+    --accent: #fc9f95;
 }
