@@ -35,10 +35,10 @@ def make_table_from_json(json_object, key):
     # key_list = list(json_object.keys())
     #key_list.remove('Name')
     if key == 'Employees':
-        df = pd.DataFrame(json_object[key])
+        df = pd.DataFrame(json_object[key]).fillna('')
         
     else: 
-        df = pd.DataFrame(json_object, index = [0])
+        df = pd.DataFrame(json_object, index = [0]).fillna('')
     time_column_names = ['DepartmentStartDate', 'StartDate', 'EndDate', 'ContractTypeStartDate', 'ContractHourStartDate', 'PositionStartDate']
     for column_name in time_column_names:
         if column_name in df.columns: 
@@ -126,7 +126,7 @@ def update_output(value, n_clicks):
         try:
             json_object = json.loads(value)
             if 'Employees' in list(json_object.keys()): 
-                df1 = make_table_from_json(json_object, 'Employees').fillna('')
+                df1 = make_table_from_json(json_object, 'Employees')
                 df2 = display_settings(json_object)
                 df2 = df2.astype(str)
                 print(df1)
