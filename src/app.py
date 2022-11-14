@@ -126,7 +126,7 @@ def update_output(value, n_clicks):
         try:
             json_object = json.loads(value)
             if 'Employees' in list(json_object.keys()): 
-                df1 = make_table_from_json(json_object, 'Employees')
+                df1 = make_table_from_json(json_object, 'Employees').fillna('')
                 df2 = display_settings(json_object)
                 df2 = df2.astype(str)
                 print(df1)
